@@ -12,7 +12,7 @@ nr_of_people = 1000
 nr_of_infected_people = 3
 dt = 0.003
 L = 1
-size = 0.006
+size = 20
 
 particles = np.zeros(nr_of_people, dtype=[("position", float, 2),
                                           ("velocity", float, 2),
@@ -31,14 +31,10 @@ class AnimatedScatter(object):
         self.fig = plt.figure()
         self.ax = plt.axes(xlim=(0, L), ylim=(0, L))
         self.ani = animation.FuncAnimation(self.fig, self.update, interval=15, init_func=self.setup_plot)
-        self.circles = []
 
     def setup_plot(self):
-        for i in range(0, nr_of_people):
-            circle = plt.Circle((particles["position"][i, 0], particles["position"][i, 1]), size, color='green')
-            self.circles.append(circle)
-            self.ax.add_patch(circle)
-        return self.circles
+        self.scat = self.ax.scatter(particles["position"][:, 0], particles["position"][:, 1], s=size)
+        return self.scat
 
     def update(self, i):
         particles["force"] = np.random.uniform(-2, 2., (nr_of_people, 2))
@@ -51,10 +47,8 @@ class AnimatedScatter(object):
             elif particles["position"][i, 1] - size < 0 or particles["position"][i, 1] + size >= 1:
                 particles["position"][i, :] = particles["position"][i, :] - particles["velocity"][i, :]*dt
                 particles["velocity"][i, :] = np.zeros((1, 2))
-            self.circles[i].center = particles["position"][i, 0], particles["position"][i, 1]
-            if particles["infected"][i] == 1:
-                self.circles[i].set_color('red')
-        return self.circles
+        self.scat.set_offsets(particles["position"])
+        return self.scat
 
 
 a = AnimatedScatter()
